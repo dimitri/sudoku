@@ -68,9 +68,9 @@ And the results with sbcl which is known to be faster than ccl:
 
   * (sudoku:solve-example-grids)
   (sudoku:solve-example-grids)
-  Solved 50 of 50 easy puzzles (avg .0039 sec (257.7 Hz), max 0.041 secs).
-  Solved 95 of 95 hard puzzles (avg .2383 sec (4.196 Hz), max  3.34 secs).
-  Solved 11 of 11 hardest puzzles (avg .0081 sec (123.6 Hz), max 0.042 secs).
+  Solved 50 of 50 easy puzzles (avg .0029 sec (347.2 Hz), max 0.023 secs).
+  Solved 95 of 95 hard puzzles (avg .2143 sec (4.666 Hz), max 3.139 secs).
+  Solved 11 of 11 hardest puzzles (avg .0069 sec (144.7 Hz), max 0.036 secs).
   NIL
 
 Not good. Yet.

@@ -77,7 +77,7 @@
 
 (defun make-puzzle-values-array ()
   "Return a puzzle values array, to use in the :initform of the puzzle class"
-  (let ((v (make-array '(9 9) :element-type 'array)))
+  (let ((v (make-array '(9 9) :element-type 'simple-bit-vector)))
     (loop for r below 9
        do (loop for c below 9
 	     do (setf (aref v r c)
@@ -93,7 +93,7 @@
 ;; fixnum instead of bit-vector: http://psg.com/~dlamkins/sl/chapter18.html
 (defun copy-puzzle-values-array (values)
   "Return a fresh copy of the VALUES array"
-  (let ((v (make-array '(9 9) :element-type 'array)))
+  (let ((v (make-array '(9 9) :element-type 'simple-bit-vector)))
     (loop for r below 9
        do (loop for c below 9
 	     do (setf (aref v r c) (copy-seq (aref values r c)))))
@@ -162,8 +162,7 @@
   "How many possible values are left in there?"
   (declare (type (simple-bit-vector 10) possible-values))
   ;; remember that we don't use the first bit of the bit-vector
-  (let ((count
-	 (loop for i from 1 to 9 count (eq 1 (aref possible-values i)))))
+  (let ((count (- (count 1 possible-values) 1)))
     (when (eq 0 count)
       (error 'empty-values))
     count))
