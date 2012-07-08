@@ -50,7 +50,18 @@ Now for the results:
   Solved 50 of 50 easy puzzles (avg 0.01 secs (151 Hz), max 0.01 secs).
   Solved 95 of 95 hard puzzles (avg 0.02 secs (42 Hz), max 0.12 secs).
   Solved 11 of 11 hardest puzzles (avg 0.01 secs (115 Hz), max 0.01 secs).
-  
+
+=== CCL
+
+That's my implementation of choice when developping, but it's known for not
+being very fast, let's see about that:
+
+  CL-USER> (sudoku:solve-example-grids)
+  Solved 50 of 50 easy puzzles (avg 0.005 sec (185.1 Hz), max 0.021 secs).
+  Solved 95 of 95 hard puzzles (avg 0.579 sec (1.728 Hz), max 8.845 secs).
+  Solved 11 of 11 hardest puzzles (avg 0.018 sec (55.12 Hz), max 0.102 secs).
+  NIL
+
 === SBCL
 
 And the results with sbcl which is known to be faster than ccl:
