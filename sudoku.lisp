@@ -35,10 +35,10 @@
   (declare (type (integer 0 9) row col))
   (values
    ;; unit with peers on the same row
-   (loop for pc below 9 unless (eq pc col) collect (cons row pc))
+   (loop for pc below 9 unless (= pc col) collect (cons row pc))
 
    ;; unit with peers on the same column
-   (loop for pr below 9 unless (eq pr row) collect (cons pr col))
+   (loop for pr below 9 unless (= pr row) collect (cons pr col))
 
    ;; unit with peers in the same box
    (let ((unit-first-row (* 3 (floor (/ row 3))))
@@ -145,12 +145,12 @@
     (with-slots (grid values) p
       (assert (equal (array-dimensions grid) '(9 9)))))
   ;; all units must have 3 elements
-  (assert (every (lambda (x) (eq x 3))
+  (assert (every (lambda (x) (= x 3))
 		 (loop for r below 9
 		    append (loop for c below 9
 			      collect (length (aref *units* r c))))))
   ;; all peers must have 20 elements
-  (assert (every (lambda (x) (eq x 20))
+  (assert (every (lambda (x) (= x 20))
 		 (loop for r below 9
 		    append (loop for c below 9
 			      collect (length (aref *peers* r c)))))))
@@ -197,8 +197,9 @@
    values for given cell, and propagating that elimination to peers."
   (with-slots (grid values) puzzle
     (setf (aref grid row col) value)	; maintain the main grid
+    (format t "assign ~d@~d.~d~%" value row col)
     (loop for other-value from 1 to 9	; then the unknown possible values
-       unless (eq other-value value)
+       unless (= other-value value)
        do (eliminate puzzle row col other-value)))
   puzzle)
 
@@ -290,7 +291,7 @@
 		   (loop for c in cols do (format p "~d " (aref grid row c)))))
 	    (loop for r below 9
 	       do
-		 (when (and (< 0 r) (eq 0 (mod r 3)))
+		 (when (and (< 0 r) (= 0 (mod r 3)))
 		   (format p "------+-------+------~%"))
 		 (format-some-cols grid r 0 1 2)
 		 (format p "| ")
