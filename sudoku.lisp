@@ -163,7 +163,7 @@
 
 (defun unset-possible-value (possible-values value)
   "return an integer representing POSSIBLE-VALUES with VALUE unset"
-  (logxor possible-values (byte 1 (- value 1))))
+  (logxor possible-values (ash 1 (- value 1))))
 
 ;;
 ;; Constraint propagation

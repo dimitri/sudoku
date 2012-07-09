@@ -103,4 +103,21 @@ Not good. Yet.
 === SBCL, fixnums
 
 So, let's see if now there's still that big a difference between CCL and
-SBCL (error preventing tests, will fix later).
+SBCL:
+
+  * (time (sudoku:solve-example-grids))
+  (time (sudoku:solve-example-grids))
+  Solved 50 of 50 easy puzzles (avg .0021 sec (471.7 Hz), max 0.015 secs).
+  Solved 95 of 95 hard puzzles (avg .0022 sec (446.0 Hz), max 0.008 secs).
+  Solved 11 of 11 hardest puzzles (avg .0018 sec (550.0 Hz), max 0.003 secs).
+  Evaluation took:
+    0.341 seconds of real time
+    0.327922 seconds of total run time (0.324250 user, 0.003672 system)
+    [ Run times consist of 0.011 seconds GC time, and 0.317 seconds non-GC time. ]
+    96.19% CPU
+    1,039,299,781 processor cycles
+    27,718,320 bytes consed
+    
+  NIL
+
+That's fast, now!
