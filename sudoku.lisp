@@ -75,30 +75,6 @@
 			 :test 'equal)))))
     p))
 
-(defun make-puzzle-values-array ()
-  "Return a puzzle values array, to use in the :initform of the puzzle class"
-  (let ((v (make-array '(9 9) :element-type 'simple-bit-vector)))
-    (loop for r below 9
-       do (loop for c below 9
-	     do (setf (aref v r c)
-		      ;; we lose a bit each time here, allowing for easier
-		      ;; index referencing
-		      (make-array 10
-				  :element-type 'bit
-				  :initial-element 1))))
-    v))
-
-;; The main inconvenient of using 2-D arrays of bit-vectors here is to have
-;; to provide for a copy implementation. The main alternative is using
-;; fixnum instead of bit-vector: http://psg.com/~dlamkins/sl/chapter18.html
-(defun copy-puzzle-values-array (values)
-  "Return a fresh copy of the VALUES array"
-  (let ((v (make-array '(9 9) :element-type 'simple-bit-vector)))
-    (loop for r below 9
-       do (loop for c below 9
-	     do (setf (aref v r c) (copy-seq (aref values r c)))))
-    v))
-
 ;; units and peers are the same for every Sudoku puzzle, so just compute
 ;; them once
 (defparameter *units*
@@ -116,25 +92,27 @@
 			       :element-type '(integer 0 9)
 			       :initial-element 0)
 	 :initarg :grid)
-   (values :documentation "All possible values for each Sudoku place"
-	   :initform (make-puzzle-values-array)
+   (values :documentation "All possible values for each Sudoku place, as a bitfield"
+	   :initform (make-array '(9 9)
+				 :element-type '(integer 0 #b111111111)
+				 :initial-element #b111111111)
 	   :initarg :values)))
 
 ;; provide a way to copy a puzzle class instance
-(defun copy-puzzle-grid (grid)
+(defun copy-puzzle-array (array)
   "copy given GRID"
-  (let ((g (make-array '(9 9) :element-type '(integer 0 9))))
+  (let ((a (make-array '(9 9) :element-type (array-element-type array))))
     (loop for r below 9
        do (loop for c below 9
-	     do (setf (aref g r c) (aref grid r c))))
-    g))
+	     do (setf (aref a r c) (aref array r c))))
+    a))
 
 (defmethod copy-puzzle ((puzzle puzzle))
   "Copy given PUZZLE into a whole new puzzle and return it"
   (with-slots (grid values) puzzle
    (make-instance 'puzzle
-		  :grid (copy-puzzle-grid grid)
-		  :values (copy-puzzle-values-array values))))
+		  :grid (copy-puzzle-array grid)
+		  :values (copy-puzzle-array values))))
 
 ;;
 ;; Basic testing
@@ -160,34 +138,33 @@
 ;;
 (defun count-remaining-possible-values (possible-values)
   "How many possible values are left in there?"
-  (declare (type (simple-bit-vector 10) possible-values))
-  ;; remember that we don't use the first bit of the bit-vector
-  (let ((count (- (count 1 possible-values) 1)))
-    (when (eq 0 count)
-      (error 'empty-values))
-    count))
+  ;; we could raise an empty-values condition if we get 0...
+  (logcount possible-values))
 
-(defun first-set-value (possible-values &key (start 1) (end 9))
-  "Return the index of the first set value in POSSIBLE-VALUES, a bit vector
-    of 10 bits, skipping the first bit"
-  (declare (type (simple-bit-vector 10) possible-values))
-  (loop for i from start to end
-     until (eq 1 (aref possible-values i))
-     finally (return i)))
+(defun first-set-value (possible-values)
+  "Return the index of the first set value in POSSIBLE-VALUES."
+  (+ 1 (floor (log possible-values 2))))
 
 (defun only-possible-value-is? (possible-values value)
   "Return a generalized boolean which is true when the only value found in
    POSSIBLE-VALUES is VALUE"
-  (declare (type (simple-bit-vector 10) possible-values))
-  (and (eq 1 (aref possible-values value))
-       (eq 1 (count-remaining-possible-values possible-values))))
+  (and (logbitp (- value 1) possible-values)
+       (= 1 (logcount possible-values))))
 
 (defun list-all-possible-values (possible-values)
   "Return a list of all possible values to explore"
-  (declare (type (simple-bit-vector 10) possible-values))
   (loop for i from 1 to 9
-     when (eq 1 (aref possible-values i))
+     when (logbitp (- i 1) possible-values)
      collect i))
+
+(defun value-is-set? (possible-values value)
+  "Return a generalized boolean which is true when given VALUE is possible
+   in POSSIBLE-VALUES"
+  (logbitp (- value 1) possible-values))
+
+(defun unset-possible-value (possible-values value)
+  "return an integer representing POSSIBLE-VALUES with VALUE unset"
+  (logxor possible-values (byte 1 (- value 1))))
 
 ;;
 ;; Constraint propagation
@@ -197,7 +174,6 @@
    values for given cell, and propagating that elimination to peers."
   (with-slots (grid values) puzzle
     (setf (aref grid row col) value)	; maintain the main grid
-    (format t "assign ~d@~d.~d~%" value row col)
     (loop for other-value from 1 to 9	; then the unknown possible values
        unless (= other-value value)
        do (eliminate puzzle row col other-value)))
@@ -224,35 +200,28 @@
 		  ;; given value, that's a contradiction
 		  (error 'unit-contains-contradictory-solution))
 
-		(when (eq 1 n)
+		(when (= 1 n)
 		  (list (first positions)))))))
-
-(defmethod eliminate-value ((puzzle puzzle) row col value)
-  "Eliminate VALUE from the set of possible values at ROWxCOL in PUZZLE"
-  (with-slots (values) puzzle
-    ;; values is a 9x9 array containing a bit-vector of 10 elements
-    (setf (aref (aref values row col) value) 0)))
 
 (defmethod eliminate ((puzzle puzzle) row col value)
   "Eliminate given VALUE from possible values in cell ROWxCOL of PUZZLE, and
    propagate when needed"
   (with-slots (grid values) puzzle
-    (let* ((possible-values (aref values row col))
-	   (value-is-set? (eq 0 (aref possible-values value))))
-      ;; if already unset, work is already done
-      (unless value-is-set?
-	;; eliminate the value from the set of possible values
-	(eliminate-value puzzle row col value)
+    ;; if already unset, work is already done
+    (when (value-is-set? (aref values row col) value)
+      ;; eliminate the value from the set of possible values
+      (let* ((possible-values
+	      (unset-possible-value (aref values row col) value)))
+	(setf (aref values row col) possible-values)
 
 	;; now if we're left with a single possible value
-	(when (eq 1 (count-remaining-possible-values possible-values))
+	(when (= 1 (count-remaining-possible-values possible-values))
 	  (let ((found-value (first-set-value possible-values)))
 	    ;; update the main grid
 	    (setf (aref grid row col) found-value)
 
 	    ;; eliminate that value we just found in all peers
-	    (eliminate-value-in-peers puzzle row col
-				      (first-set-value possible-values))))
+	    (eliminate-value-in-peers puzzle row col found-value)))
 
 	;; now check if any unit has a single possible place for that value
 	(loop
@@ -338,10 +307,7 @@
 	 (sort
 	  (loop for r below 9
 	     append (loop for c below 9
-		       for n = (handler-case
-				   (count-remaining-possible-values
-				    (aref values r c))
-				 (empty-values () 0))
+		       for n = (count-remaining-possible-values (aref values r c))
 		       when (< 1 n)
 		       collect (list n (cons r c))))
 	  (lambda (a b)

@@ -27,6 +27,13 @@ The first consequence concerns data structures used, as those lists and hash
 tables in python are better replaced with two dimensional arrays in CL, and
 abstracted away in a class. Probably. At least that's what I did here.
 
+So I first picked bit-vectors (that is, array of bits) to represent the set
+of values that are still possible to assign in each square of the grid, and
+then was told that the usual way in CL is to use the advanced function that
+act on an integer directly in its 2-complement bit representation.
+
+And of course that integer-as-bitfields implementation performs way better!
+
 == Performances
 
 That's somewhat useless and generally is responsible for loads of
@@ -51,7 +58,7 @@ Now for the results:
   Solved 95 of 95 hard puzzles (avg 0.02 secs (42 Hz), max 0.12 secs).
   Solved 11 of 11 hardest puzzles (avg 0.01 secs (115 Hz), max 0.01 secs).
 
-=== CCL
+=== CCL, bit-vectors
 
 That's my implementation of choice when developping, but it's known for not
 being very fast, let's see about that:
@@ -62,7 +69,17 @@ being very fast, let's see about that:
   Solved 11 of 11 hardest puzzles (avg 0.018 sec (55.12 Hz), max 0.102 secs).
   NIL
 
-=== SBCL
+=== CCL, fixnums
+
+So, when using logcount, logbitp and friends, we have:
+
+  CL-USER> (sudoku:solve-example-grids)
+  Solved 50 of 50 easy puzzles (avg 0.003 sec (387.2 Hz), max 0.007 secs).
+  Solved 95 of 95 hard puzzles (avg 0.003 sec (331.6 Hz), max  0.01 secs).
+  Solved 11 of 11 hardest puzzles (avg 0.002 sec (412.6 Hz), max 0.004 secs).
+  NIL
+
+=== SBCL, bit-vectors
 
 And the results with sbcl which is known to be faster than ccl:
 
@@ -74,3 +91,8 @@ And the results with sbcl which is known to be faster than ccl:
   NIL
 
 Not good. Yet.
+
+=== SBCL, fixnums
+
+So, let's see if now there's still that big a difference between CCL and
+SBCL (error preventing tests, will fix later).
