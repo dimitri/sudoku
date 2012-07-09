@@ -73,12 +73,20 @@ being very fast, let's see about that:
 
 So, when using logcount, logbitp and friends, we have:
 
-  CL-USER> (sudoku:solve-example-grids)
-  Solved 50 of 50 easy puzzles (avg 0.003 sec (387.2 Hz), max 0.007 secs).
-  Solved 95 of 95 hard puzzles (avg 0.003 sec (331.6 Hz), max  0.01 secs).
-  Solved 11 of 11 hardest puzzles (avg 0.002 sec (412.6 Hz), max 0.004 secs).
+  CL-USER> (time (sudoku:solve-example-grids))
+  Solved 50 of 50 easy puzzles (avg 0.003 sec (394.3 Hz), max 0.008 secs).
+  Solved 95 of 95 hard puzzles (avg 0.003 sec (333.8 Hz), max  0.01 secs).
+  Solved 11 of 11 hardest puzzles (avg 0.002 sec (422.8 Hz), max 0.004 secs).
+  
+  (SUDOKU:SOLVE-EXAMPLE-GRIDS)
+  took 441,831 microseconds (0.441831 seconds) to run.
+        35,660 microseconds (0.035660 seconds, 8.07%) of which was spent in GC.
+  During that period, and with 2 available CPU cores,
+       418,886 microseconds (0.418886 seconds) were spent in user mode
+        14,287 microseconds (0.014287 seconds) were spent in system mode
+   41,960,896 bytes of memory allocated.
   NIL
-
+  
 === SBCL, bit-vectors
 
 And the results with sbcl which is known to be faster than ccl:

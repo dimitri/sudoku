@@ -32,7 +32,6 @@
 ;;
 (defun list-units-containing (row col)
   "list indexes of all units of a given position"
-  (declare (type (integer 0 9) row col))
   (values
    ;; unit with peers on the same row
    (loop for pc below 9 unless (= pc col) collect (cons row pc))
