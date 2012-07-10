@@ -1,5 +1,15 @@
-;;;; sudoku.lisp
-;;; See http://norvig.com/sudoku.html
+;;;; sudoku.lisp --- Solving Every Sudoku Puzzle
+;;
+;; Copyright (C) 2012 Dimitri Fontaine
+;;
+;; Author: Dimitri Fontaine <dim@tapoueh.org>
+;; GIT: https://github.com/dimitri/sudoku
+;; Version: 1.0
+;; Created: 2012-07-08
+;; Keywords: common-lisp sudoku solver norvig
+;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
+;;
+;; See http://norvig.com/sudoku.html
 ;;
 ;; A Sudoku puzzle is a grid of 81 squares; the majority of enthusiasts
 ;; label the columns 1-9, the rows A-I, and call a collection of nine
