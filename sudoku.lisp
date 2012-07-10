@@ -40,8 +40,8 @@
    (loop for pr below 9 unless (= pr row) collect (cons pr col))
 
    ;; unit with peers in the same box
-   (let ((unit-first-row (* 3 (floor (/ row 3))))
-	 (unit-first-col (* 3 (floor (/ col 3)))))
+   (let ((unit-first-row (* 3 (floor row 3)))
+	 (unit-first-col (* 3 (floor col 3))))
      (loop for pr from unit-first-row to (+ 2 unit-first-row)
 	append (loop for pc from unit-first-col to (+ 2 unit-first-col)
 		  collect (cons pr pc))))))
