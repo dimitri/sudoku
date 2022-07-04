@@ -246,7 +246,7 @@
   (with-slots (grid values) puzzle
     ;; fill in the grid
     (loop
-       for index below 80
+       for index below 81
        for digit = (parse-integer grid-string :start index :end (+ 1 index) :junk-allowed t)
        do (setf (row-major-aref grid index) (or digit 0)))
     ;; now assign the values
